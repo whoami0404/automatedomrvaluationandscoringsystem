@@ -3,23 +3,46 @@ from PIL import Image
 import io
 import os
 import json
+import re
 from datetime import datetime
 import pandas as pd
 import streamlit.components.v1 as components
 
 from omr import grade_omr, demo_answer_key
 
-# Show a Tailwind-based landing page (templates/index.html) inside Streamlit
+st.set_page_config(page_title='Automated OMR Evaluator', layout='wide')
+
+# Paths to HTML/CSS assets
 TEMPLATE_PATH = os.path.join("templates", "index.html")
+CSS_PATH = os.path.join("static", "style.css")
+
+# Read and inline the HTML + CSS so the entire HTML/CSS experience is embedded inside Streamlit
+landing_html = None
 if os.path.exists(TEMPLATE_PATH):
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as f:
         landing_html = f.read()
-    # Render the HTML (Tailwind via CDN is included in the template)
-    components.html(landing_html, height=360, scrolling=True)
-else:
-    st.warning("templates/index.html not found — the Tailwind landing page is unavailable.")
+    # If there's a separate CSS file, inline it into the HTML head to ensure the component renders correctly
+    if os.path.exists(CSS_PATH):
+        try:
+            with open(CSS_PATH, "r", encoding="utf-8") as cf:
+                css_text = cf.read()
+            # Remove any existing <link rel="stylesheet" ...> references to the static CSS file
+            landing_html = re.sub(r"<link[^>]*href=['\"]*.*style\.css['\"][^>]*>", "", landing_html, flags=re.IGNORECASE)
+            # Inject the CSS into a <style> tag before </head>
+            if "</head>" in landing_html:
+                landing_html = landing_html.replace("</head>", f"<style>{css_text}</style></head>")
+            else:
+                landing_html = f"<style>{css_text}</style>\n" + landing_html
+        except Exception:
+            # If inlining fails, keep the raw HTML so the app still works
+            pass
 
-st.set_page_config(page_title='Automated OMR Evaluator', layout='wide')
+# Render the landing page component (Tailwind+custom CSS) if available
+if landing_html:
+    components.html(landing_html, height=380, scrolling=True)
+else:
+    st.warning("templates/index.html not found — the landing page is unavailable.")
+
 st.title('Automated OMR Evaluation & Scoring System (MVP)')
 
 RESULTS_DIR = 'results'
