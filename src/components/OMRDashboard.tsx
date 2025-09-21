@@ -4,26 +4,29 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Upload, FileSpreadsheet, ScanLine, Download, CheckCircle, AlertTriangle, XCircle, BarChart3 } from "lucide-react";
+import { Upload, FileSpreadsheet, ScanLine, Download, CheckCircle, AlertTriangle, XCircle, BarChart3, Code } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import UploadSection from "./UploadSection";
 import ResultsTable from "./ResultsTable";
 import StatsOverview from "./StatsOverview";
+import ProcessingInfo from "./ProcessingInfo";
+import BackendGuide from "./BackendGuide";
 
 export interface OMRResult {
   id: string;
   studentId: string;
   totalScore: number;
   subjectScores: {
-    Math: number;
-    AI: number;
-    ML: number;
-    DS: number;
-    GenAI: number;
+    Python: number;
+    EDA: number;
+    SQL: number;
+    'Power BI': number;
+    Statistics: number;
   };
   status: 'completed' | 'pending' | 'error';
   flagged: boolean;
   processingTime: number;
+  confidence: number;
 }
 
 const OMRDashboard = () => {
@@ -64,21 +67,22 @@ const OMRDashboard = () => {
     setIsProcessing(true);
     setProcessingProgress(0);
 
-    // Simulate processing with mock data
+    // Enhanced mock results based on your Excel format
     const mockResults: OMRResult[] = Array.from({ length: omrSheetsUploaded }, (_, i) => ({
       id: `student_${i + 1}`,
       studentId: `STU${String(i + 1).padStart(3, '0')}`,
       totalScore: Math.floor(Math.random() * 40) + 60, // 60-100 range
       subjectScores: {
-        Math: Math.floor(Math.random() * 8) + 12, // 12-20 range
-        AI: Math.floor(Math.random() * 8) + 12,
-        ML: Math.floor(Math.random() * 8) + 12,
-        DS: Math.floor(Math.random() * 8) + 12,
-        GenAI: Math.floor(Math.random() * 8) + 12,
+        Python: Math.floor(Math.random() * 8) + 12, // 12-20 range per subject
+        EDA: Math.floor(Math.random() * 8) + 12,
+        SQL: Math.floor(Math.random() * 8) + 12,
+        'Power BI': Math.floor(Math.random() * 8) + 12,
+        Statistics: Math.floor(Math.random() * 8) + 12,
       },
       status: Math.random() > 0.1 ? 'completed' : (Math.random() > 0.5 ? 'pending' : 'error'),
       flagged: Math.random() > 0.8,
       processingTime: Math.floor(Math.random() * 3000) + 1000,
+      confidence: Math.floor(Math.random() * 20) + 80, // 80-100% confidence
     }));
 
     // Simulate processing progress
@@ -97,11 +101,11 @@ const OMRDashboard = () => {
   };
 
   const downloadResults = () => {
-    // Create CSV content
+    // Create CSV content with your Excel format
     const csvContent = [
-      'Student ID,Total Score,Math,AI,ML,DS,GenAI,Status,Flagged',
+      'Student ID,Total Score,Python,EDA,SQL,Power BI,Statistics,Status,Flagged,Confidence %',
       ...results.map(result => 
-        `${result.studentId},${result.totalScore},${result.subjectScores.Math},${result.subjectScores.AI},${result.subjectScores.ML},${result.subjectScores.DS},${result.subjectScores.GenAI},${result.status},${result.flagged}`
+        `${result.studentId},${result.totalScore},${result.subjectScores.Python},${result.subjectScores.EDA},${result.subjectScores.SQL},${result.subjectScores['Power BI']},${result.subjectScores.Statistics},${result.status},${result.flagged},${result.confidence}`
       )
     ].join('\n');
 
@@ -109,7 +113,7 @@ const OMRDashboard = () => {
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'omr_results.csv';
+    a.download = `omr_results_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
 
@@ -218,7 +222,7 @@ const OMRDashboard = () => {
 
         {/* Main Content */}
         <Tabs defaultValue="upload" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3 h-12">
+          <TabsList className="grid w-full grid-cols-4 h-12">
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
               Upload & Process
@@ -231,61 +235,72 @@ const OMRDashboard = () => {
               <BarChart3 className="h-4 w-4" />
               Analytics
             </TabsTrigger>
+            <TabsTrigger value="backend" className="flex items-center gap-2">
+              <Code className="h-4 w-4" />
+              Backend Setup
+            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="upload">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <UploadSection 
-                title="Upload Answer Key"
-                description="Excel file with correct answers (format: '1 - A', '2 - B', etc.)"
-                icon={FileSpreadsheet}
-                acceptedFiles=".xlsx,.xls,.csv"
-                onFileUpload={(files) => handleFileUpload(files, 'answerKey')}
-                uploaded={answerKeyUploaded}
-              />
+            <div className="space-y-6">
+              {/* AI Processing Info */}
+              <ProcessingInfo />
               
-              <UploadSection 
-                title="Upload OMR Sheets"
-                description="Image files of completed OMR sheets (JPG, PNG, PDF)"
-                icon={Upload}
-                acceptedFiles=".jpg,.jpeg,.png,.pdf"
-                multiple
-                onFileUpload={(files) => handleFileUpload(files, 'omr')}
-                uploaded={omrSheetsUploaded > 0}
-                uploadedCount={omrSheetsUploaded}
-              />
-            </div>
-            
-            <Card className="mt-6 bg-gradient-card border-0 shadow-medium">
-              <CardHeader>
-                <CardTitle>Process OMR Sheets</CardTitle>
-                <CardDescription>
-                  Start automatic evaluation once both answer key and OMR sheets are uploaded
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <Badge variant={answerKeyUploaded ? "default" : "secondary"} className="flex items-center gap-1">
-                      {answerKeyUploaded ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                      Answer Key
-                    </Badge>
-                    <Badge variant={omrSheetsUploaded > 0 ? "default" : "secondary"} className="flex items-center gap-1">
-                      {omrSheetsUploaded > 0 ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                      OMR Sheets ({omrSheetsUploaded})
-                    </Badge>
+              {/* Upload Sections */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <UploadSection 
+                  title="Upload Answer Key"
+                  description="Excel file with format: Python (1-20), EDA (21-40), SQL (41-60), Power BI (61-80), Statistics (81-100)"
+                  icon={FileSpreadsheet}
+                  acceptedFiles=".xlsx,.xls,.csv"
+                  onFileUpload={(files) => handleFileUpload(files, 'answerKey')}
+                  uploaded={answerKeyUploaded}
+                />
+                
+                <UploadSection 
+                  title="Upload OMR Sheets"
+                  description="High-quality images of completed OMR sheets. Supports rotation, skew, and lighting correction."
+                  icon={Upload}
+                  acceptedFiles=".jpg,.jpeg,.png,.pdf"
+                  multiple
+                  onFileUpload={(files) => handleFileUpload(files, 'omr')}
+                  uploaded={omrSheetsUploaded > 0}
+                  uploadedCount={omrSheetsUploaded}
+                />
+              </div>
+              
+              {/* Processing Controls */}
+              <Card className="bg-gradient-card border-0 shadow-medium">
+                <CardHeader>
+                  <CardTitle>AI-Powered OMR Processing</CardTitle>
+                  <CardDescription>
+                    Advanced computer vision processing with Google Vision API and OpenRouter AI for maximum accuracy
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Badge variant={answerKeyUploaded ? "default" : "secondary"} className="flex items-center gap-1">
+                        {answerKeyUploaded ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                        Answer Key
+                      </Badge>
+                      <Badge variant={omrSheetsUploaded > 0 ? "default" : "secondary"} className="flex items-center gap-1">
+                        {omrSheetsUploaded > 0 ? <CheckCircle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                        OMR Sheets ({omrSheetsUploaded})
+                      </Badge>
+                    </div>
+                    <Button 
+                      onClick={startProcessing} 
+                      disabled={!answerKeyUploaded || omrSheetsUploaded === 0 || isProcessing}
+                      size="lg"
+                      className="bg-gradient-primary hover:opacity-90 shadow-soft"
+                    >
+                      {isProcessing ? "Processing..." : "Start AI Processing"}
+                    </Button>
                   </div>
-                  <Button 
-                    onClick={startProcessing} 
-                    disabled={!answerKeyUploaded || omrSheetsUploaded === 0 || isProcessing}
-                    size="lg"
-                    className="bg-gradient-primary hover:opacity-90 shadow-soft"
-                  >
-                    {isProcessing ? "Processing..." : "Start Processing"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="results">
@@ -305,6 +320,10 @@ const OMRDashboard = () => {
 
           <TabsContent value="analytics">
             <StatsOverview results={results} />
+          </TabsContent>
+
+          <TabsContent value="backend">
+            <BackendGuide />
           </TabsContent>
         </Tabs>
       </div>

@@ -26,8 +26,8 @@ const StatsOverview = ({ results }: StatsOverviewProps) => {
     );
   }
 
-  // Calculate subject averages
-  const subjects = ['Math', 'AI', 'ML', 'DS', 'GenAI'];
+  // Calculate subject averages for your specific subjects
+  const subjects = ['Python', 'EDA', 'SQL', 'Power BI', 'Statistics'];
   const subjectData = subjects.map(subject => {
     const scores = results.map(r => r.subjectScores[subject as keyof typeof r.subjectScores]);
     const average = scores.reduce((acc, score) => acc + score, 0) / scores.length;

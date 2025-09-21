@@ -69,11 +69,12 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
               <TableRow className="border-border/50">
                 <TableHead className="font-semibold">Student ID</TableHead>
                 <TableHead className="font-semibold">Total Score</TableHead>
-                <TableHead className="font-semibold">Math</TableHead>
-                <TableHead className="font-semibold">AI</TableHead>
-                <TableHead className="font-semibold">ML</TableHead>
-                <TableHead className="font-semibold">DS</TableHead>
-                <TableHead className="font-semibold">GenAI</TableHead>
+                <TableHead className="font-semibold">Python</TableHead>
+                <TableHead className="font-semibold">EDA</TableHead>
+                <TableHead className="font-semibold">SQL</TableHead>
+                <TableHead className="font-semibold">Power BI</TableHead>
+                <TableHead className="font-semibold">Statistics</TableHead>
+                <TableHead className="font-semibold">Confidence</TableHead>
                 <TableHead className="font-semibold">Status</TableHead>
                 <TableHead className="font-semibold">Flags</TableHead>
               </TableRow>
@@ -88,28 +89,33 @@ const ResultsTable = ({ results }: ResultsTableProps) => {
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={getScoreColor(result.subjectScores.Math, 20)}>
-                      {result.subjectScores.Math}/20
+                    <span className={getScoreColor(result.subjectScores.Python, 20)}>
+                      {result.subjectScores.Python}/20
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={getScoreColor(result.subjectScores.AI, 20)}>
-                      {result.subjectScores.AI}/20
+                    <span className={getScoreColor(result.subjectScores.EDA, 20)}>
+                      {result.subjectScores.EDA}/20
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={getScoreColor(result.subjectScores.ML, 20)}>
-                      {result.subjectScores.ML}/20
+                    <span className={getScoreColor(result.subjectScores.SQL, 20)}>
+                      {result.subjectScores.SQL}/20
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={getScoreColor(result.subjectScores.DS, 20)}>
-                      {result.subjectScores.DS}/20
+                    <span className={getScoreColor(result.subjectScores['Power BI'], 20)}>
+                      {result.subjectScores['Power BI']}/20
                     </span>
                   </TableCell>
                   <TableCell>
-                    <span className={getScoreColor(result.subjectScores.GenAI, 20)}>
-                      {result.subjectScores.GenAI}/20
+                    <span className={getScoreColor(result.subjectScores.Statistics, 20)}>
+                      {result.subjectScores.Statistics}/20
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <span className={`font-medium ${result.confidence >= 90 ? 'text-success' : result.confidence >= 80 ? 'text-warning' : 'text-error'}`}>
+                      {result.confidence}%
                     </span>
                   </TableCell>
                   <TableCell>
