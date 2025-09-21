@@ -1,57 +1,99 @@
-# Welcome to your Whomai project
+# Automated OMR Evaluation & Scoring System
 
-## How can I edit this code?
+## Theme 1 — Problem Statement
+At Innomatics Research Labs, placement readiness assessments are conducted for roles such as Data Analytics and AI/ML for Data Science with Generative AI. Each exam uses standardized OMR sheets with 100 questions, divided as 20 questions per subject across 5 subjects. Evaluation is currently manual and suffers from long turnaround times, higher error rates, and high resource needs when processing thousands of sheets (≈3000) on an exam day.
 
-There are several ways of editing your application.
+## Objective
+Design and implement a scalable, automated OMR evaluation system that:
+- Accurately evaluates mobile-captured OMR sheets.
+- Produces per-subject scores (0–20) and a total score (0–100).
+- Supports multiple sheet versions (2–4 sets per exam).
+- Provides a web interface for evaluators to manage uploads and results.
+- Achieves an error tolerance of less than 0.5%.
+- Reduces evaluation turnaround from days to minutes.
 
+## Proposed Solution
+The system will include the following components:
+- Capture: Mobile phone camera images of OMR sheets.
+- Preprocessing: Rotation, skew correction, illumination normalization, and perspective rectification.
+- Bubble Detection & Evaluation: Classic CV (OpenCV) for grid detection and contour analysis; optional lightweight ML/TFLite classifier for ambiguous markings.
+- Answer Key Matching: Map extracted responses to a per-version answer key.
+- Result Generation & Storage: Compute subject-wise scores and total; store rectified images, overlay debug visuals, and JSON results for audit.
+- Web Application: Streamlit (MVP) or Flask/FastAPI backend with a web UI for evaluators to upload, review flagged sheets, and export results.
 
+## Workflow
+1. Students fill printed OMR sheets during exams.
+2. Sheets are digitized via mobile phone captures.
+3. Evaluators upload captures through the web interface.
+4. Pipeline steps execute automatically and produce per-student JSON results and exports (CSV/Excel).
+5. Evaluators can review flagged/ambiguous sheets and reprocess if necessary.
 
-Changes made via Lovable will be committed automatically to this repo.
+## Evaluation & Metrics
+- Target accuracy: >99.5% (error tolerance <0.5%).
+- Processing time: aim for minutes per full batch (depends on infra).
+- Auditability: store rectified images and overlay masks to validate scores.
 
-**Use your preferred IDE**
+## Tech Stack
+Core OMR Evaluation:
+- Python
+- OpenCV
+- NumPy / SciPy
+- Pillow
+- PyMuPDF (for PDFs)
+- scikit-learn / TensorFlow Lite (optional)
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Web Application (MVP):
+- Streamlit for evaluator UI
+- Flask / FastAPI for production APIs
+- SQLite / PostgreSQL for metadata and results
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+## Files included
+- streamlit_app.py — minimal Streamlit UI for uploads and demo grading (placeholder run_omr()).
+- README.md — this file.
+- requirements.txt — list of Python dependencies.
 
-Follow these steps:
+## Installation (Local)
+1. Clone the repository:
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+git clone https://github.com/whoami0404/automatedomrvaluationandscoringsystem.git
+cd automatedomrvaluationandscoringsystem
 ```
 
-**Edit a file directly in GitHub**
+2. (Optional) Create and activate a virtual environment:
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+```bash
+python -m venv .venv
+source .venv/bin/activate  # Windows: .venv\Scripts\activate
+```
 
-**Use GitHub Codespaces**
+3. Install dependencies:
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+```bash
+pip install -r requirements.txt
+```
 
-## What technologies are used for this project?
+4. Run the Streamlit demo app:
 
-This project is built with:
+```bash
+streamlit run streamlit_app.py
+```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Deployment (Streamlit Cloud)
+1. Go to https://streamlit.io/cloud and sign in with GitHub.
+2. Click "New app", select this repository and the main branch.
+3. Set the main file to `streamlit_app.py` and deploy.
+4. Add any secrets via the Streamlit Cloud dashboard (Settings → Secrets) if the app requires external storage keys.
 
+## Usage
+- Upload captured OMR images through the web UI to process and obtain JSON results.
+- Export results as CSV for downstream reporting.
 
+## Sample Data
+Add a `sample_data/` directory to the repo and place example OMR captures and answer keys there. (If sample data is available, link or ZIP may be added.)
+
+## Contributing
+Contributions, bug reports, and feature requests are welcome. Please open issues and pull requests on GitHub.
+
+## License & Contact
+Specify your preferred license (e.g., MIT) and contact information.
