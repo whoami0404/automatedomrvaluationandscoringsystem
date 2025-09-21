@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>OMR Result</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container">
+    <h1>OMR Result</h1>
+    <h2>Total Score: {{ result['total_score'] }}</h2>
+    <h3>Subject Scores</h3>
+    <ul>
+      {% for k,v in result['subject_scores'].items() %}
+        <li>{{ k }}: {{ v }}</li>
+      {% endfor %}
+    </ul>
+    <h3>Overlay</h3>
+    {% if overlay %}
+      <img src="{{ url_for('static', filename=overlay.split('/')[-1]) }}" alt="overlay" style="max-width:600px;">
+      <p><a href="{{ url_for('download_file', filename=overlay) }}">Download overlay</a></p>
+    {% else %}
+      <p>No overlay available.</p>
+    {% endif %}
+    <p><a href="{{ url_for('download_file', filename=json_path) }}">Download JSON result</a></p>
+    <p><a href="{{ url_for('index') }}">Back</a></p>
+  </div>
+</body>
+</html>
